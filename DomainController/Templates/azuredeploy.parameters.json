@@ -1,0 +1,28 @@
+﻿{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageAccountType": {
+      "value": "Standard_GRS"
+    },
+    "adminUsername": {
+      "value": "lcadmin"
+    },
+    "adminPassword": {
+      "value": "lAmina6!LCnet"
+    },
+    "adVMSize": {
+      "value": "Standard_D1_v2"
+    },
+    "domainName": {
+      "value": "lab01.lucisit.net"
+    },
+    "dnsPrefix": {
+      "value": "lc01dc01"
+    },
+    "assetLocation": {
+      "value": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/active-directory-new-domain/"
+    }
+  }
+}
+

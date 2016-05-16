@@ -1,0 +1,6 @@
+﻿{
+  "itemDisplayName": "Build an Exchange Hybrid Lab",
+  "description": "This template creates virtual machines for an Exchange hybrid lab, including: Domain Controller, Exchange Server"
+  "summary": "Exchange Hybrid Lab",
+  "dateUpdated": "2016-05-16"
+}
