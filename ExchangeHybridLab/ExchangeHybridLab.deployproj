@@ -37,7 +37,9 @@
     <None Include="DSC\cDisk\cDisk.psd1" />
     <None Include="DSC\cDisk\DSCResources\SAMPLE_cDiskNoRestart\SAMPLE_cDiskNoRestart.psm1" />
     <None Include="DSC\cDisk\DSCResources\SAMPLE_cDiskNoRestart\SAMPLE_cDiskNoRestart.schema.mof" />
-    <None Include="DSC\CreateADForest.ps1" />
+    <None Include="DSC\CreateADForest_old.ps1" />
+    <Content Include="DSC\CreateADForest.ps1" />
+    <Content Include="DSC\DeployADForestConfiguration.ps1" />
     <None Include="DSC\xActiveDirectory\appveyor.yml" />
     <None Include="DSC\xActiveDirectory\Assert-HADC.ps1" />
     <None Include="DSC\xActiveDirectory\Assert-ParentChildDomains.ps1" />
@@ -99,8 +101,8 @@
     <None Include="DSC\xPendingReboot\DSCResources\MSFT_xPendingReboot\MSFT_xPendingReboot.schema.mof" />
     <None Include="DSC\xPendingReboot\xPendingReboot.psd1" />
     <None Include="DSC\xPendingReboot\xPendingReboot_Documentation.html" />
+    <Content Include="Templates\vnet-with-dns-server.json" />
     <Content Include="Templates\vnet.json" />
-    <None Include="Templates\vnet-with-dns-server.json" />
   </ItemGroup>
   <Target Name="GetReferenceAssemblyPaths" />
 </Project>

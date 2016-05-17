@@ -5,8 +5,6 @@ VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "DomainController", "DomainController\DomainController.deployproj", "{127B9D61-18B2-4C3F-9181-497B90A4C78A}"
 EndProject
-Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "Lab", "Lab\Lab.deployproj", "{1AF29D8E-84EB-4FD1-8BFD-2075762B1615}"
-EndProject
 Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "ExchangeHybridLab", "ExchangeHybridLab\ExchangeHybridLab.deployproj", "{D796BCEF-AEF1-493B-AAC8-9782129D85C6}"
 EndProject
 Global
@@ -19,10 +17,6 @@ Global
 		{127B9D61-18B2-4C3F-9181-497B90A4C78A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{127B9D61-18B2-4C3F-9181-497B90A4C78A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{127B9D61-18B2-4C3F-9181-497B90A4C78A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1AF29D8E-84EB-4FD1-8BFD-2075762B1615}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1AF29D8E-84EB-4FD1-8BFD-2075762B1615}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1AF29D8E-84EB-4FD1-8BFD-2075762B1615}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1AF29D8E-84EB-4FD1-8BFD-2075762B1615}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D796BCEF-AEF1-493B-AAC8-9782129D85C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D796BCEF-AEF1-493B-AAC8-9782129D85C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D796BCEF-AEF1-493B-AAC8-9782129D85C6}.Release|Any CPU.ActiveCfg = Release|Any CPU

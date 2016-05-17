@@ -7,6 +7,12 @@
         },
         "lclab01adds01AdminUserName": {
             "value": "lcadmin"
+        },
+        "lclab01DomainName": {
+            "value": "lab01.lucisit.net"
+        },
+        "lclab01adds01PublicDnsName": {
+            "value": "lclab01adds01t"
         }
     }
 }

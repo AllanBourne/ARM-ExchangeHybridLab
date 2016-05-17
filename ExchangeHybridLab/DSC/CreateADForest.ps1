@@ -1,86 +1,44 @@
-﻿configuration CreateADForest
-{ 
-   param 
-   ( 
-        [Parameter(Mandatory)]
-        [String]$DomainName,
+Configuration Main
+{
 
-        [Parameter(Mandatory)]
-        [System.Management.Automation.PSCredential]$Admincreds,
+	Param ( 
+	
+		[Parameter(Mandatory)]
+		[string] $nodeName, 
 
-        [Int]$RetryCount=20,
-        [Int]$RetryIntervalSec=30
-    ) 
-    
-    Import-DscResource -ModuleName xActiveDirectory, xDisk, xNetworking, xPendingReboot, cDisk
-    [System.Management.Automation.PSCredential ]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
+		[Parameter(Mandatory)]
+		[String]$DomainName,
 
-    Node localhost
-    {
-        LocalConfigurationManager            
-        {            
-            ActionAfterReboot = 'ContinueConfiguration'            
-            ConfigurationMode = 'ApplyOnly'            
-            RebootNodeIfNeeded = $true            
-        } 
+		[Parameter(Mandatory)]
+		[PSCredential]$AdminCreds
 
-        WindowsFeature DNS 
-        { 
-            Ensure = "Present" 
-            Name = "DNS"
-        }
+	)
 
-        xDnsServerAddress DnsServerAddress 
-        { 
-            Address        = '127.0.0.1' 
-            InterfaceAlias = 'Ethernet'
-            AddressFamily  = 'IPv4'
-            DependsOn = "[WindowsFeature]DNS"
-        }
+	[Int]$RetryCount=20
+	[Int]$RetryIntervalSec=30
 
-        xWaitforDisk Disk2
-        {
-             DiskNumber = 2
-             RetryIntervalSec =$RetryIntervalSec
-             RetryCount = $RetryCount
-        }
+	Import-DscResource -ModuleName PSDesiredStateConfiguration, xActiveDirectory, xDisk, xNetworking, xPendingReboot, cDisk
+    [System.Management.Automation.PSCredential ]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($AdminCreds.UserName)", $AdminCreds.Password)
 
-        cDiskNoRestart ADDataDisk
-        {
-            DiskNumber = 2
-            DriveLetter = "F"
-        }
+	Node $nodeName
+		{
+			File CreateFile {
+				DestinationPath = 'C:\Temp\Test.txt'
+				Ensure = "Present"
+				Contents = 'Hello World!'
+			}
 
-        WindowsFeature ADDSInstall 
-        { 
-            Ensure = "Present" 
-            Name = "AD-Domain-Services"
-        }  
+			File CreateFile {
+				DestinationPath = 'C:\Temp\Test2.txt'
+				Ensure = "Present"
+				Contents = 'Hello World!'
+			}
 
-        xADDomain FirstDS 
-        {
-            DomainName = $DomainName
-            DomainAdministratorCredential = $DomainCreds
-            SafemodeAdministratorPassword = $DomainCreds
-            DatabasePath = "F:\NTDS"
-            LogPath = "F:\NTDS"
-            SysvolPath = "F:\SYSVOL"
-            DependsOn = "[WindowsFeature]ADDSInstall","[xDnsServerAddress]DnsServerAddress","[cDiskNoRestart]ADDataDisk"
-        }
-
-        xWaitForADDomain DscForestWait
-        {
-            DomainName = $DomainName
-            DomainUserCredential = $DomainCreds
-            RetryCount = $RetryCount
-            RetryIntervalSec = $RetryIntervalSec
-            DependsOn = "[xADDomain]FirstDS"
-        } 
-
-        xPendingReboot Reboot1
-        { 
-            Name = "RebootServer"
-            DependsOn = "[xWaitForADDomain]DscForestWait"
-        }
-   }
-} 
+			Log AfterDirectoryCopy
+			{
+				# The message below gets written to the Microsoft-Windows-Desired State Configuration/Analytic log
+				Message = "Finished running the file resource with ID CreateFile"
+				DependsOn = "[File]CreateFile" # This means run "CreateFile" first.
+			}
+		}
+	}
