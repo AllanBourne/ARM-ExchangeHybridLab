@@ -1,3 +1,21 @@
 ﻿{
+    "storageAccountName": {
+        "value": "lcnetdscartifacts"
+    },
+    "virtualNetworkName": {
+        "value": "vnet01"
+    },
+    "adSubnetName": {
+        "value": "subnet01"
+    },
+    "adminUsername": {
+        "value": "lcadmin"
+    },
+    "adVMSize": {
+        "value": "Standard_D2_v2"
+    },
+    "domainName": {
+      "value": "lab06.lucisit.net"
+    }
 
 }

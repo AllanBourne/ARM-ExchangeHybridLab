@@ -1,0 +1,257 @@
+﻿{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+  "parameters": {
+    "lclab01Type": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS",
+        "Standard_GRS",
+        "Standard_RAGRS",
+        "Premium_LRS"
+      ]
+    },
+    "lclab01adds01Name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lclab01adds01IPAddress": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue":  "10.0.0.4"
+    },
+    "lclab01adds01AdminUserName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lclab01adds01AdminPassword": {
+      "type": "securestring"
+    },
+    "lclab01adds01WindowsOSVersion": {
+      "type": "string",
+      "defaultValue": "2012-R2-Datacenter",
+      "allowedValues": [
+        "2008-R2-SP1",
+        "2012-Datacenter",
+        "2012-R2-Datacenter",
+        "Windows-Server-Technical-Preview"
+      ]
+    },
+    "_artifactsLocation": {
+      "type": "string",
+      "metadata": {
+        "description": "Auto-generated container in staging storage account to receive post-build staging folder upload"
+      }
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Auto-generated token to access _artifactsLocation"
+      }
+    }
+  },
+  "variables": {
+    "lclab01Name": "[concat('lclab01', uniqueString(resourceGroup().id))]",
+    "lclab01Prefix": "10.0.0.0/16",
+    "lclab01Subnet1Name": "Subnet-1",
+    "lclab01Subnet1Prefix": "10.0.0.0/24",
+    "lclab01adds01ImagePublisher": "MicrosoftWindowsServer",
+    "lclab01adds01ImageOffer": "WindowsServer",
+    "lclab01adds01OSDiskName": "lclab01adds01OSDisk",
+    "lclab01adds01VmSize": "Standard_D1",
+    "lclab01adds01VnetID": "[resourceId('Microsoft.Network/virtualNetworks', 'lclab01')]",
+    "lclab01vnet01Name": "lclab01vnet01",
+    "lclab01vnetTemplate": "ExchangeHybridLab/Templates/vnet.json",
+    "lclab01vnetwithdnsTemplate": "ExchangeHybridLab/Templates/vnet-with-dns-server.json",
+    "lclab01adds01SubnetRef": "[concat(variables('lclab01adds01VnetID'), '/subnets/', variables('lclab01Subnet1Name'))]",
+    "lclab01adds01StorageAccountContainerName": "vhds",
+    "lclab01adds01NicName": "[concat(parameters('lclab01adds01Name'), 'NetworkInterface')]",
+    "CreateADForestConfigurationFunction": "CreateADForest.ps1\\CreateADForest"
+  },
+  "resources": [
+    {
+      "name": "[variables('lclab01Name')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "lclab01"
+      },
+      "properties": {
+        "accountType": "[parameters('lclab01Type')]"
+      }
+    },
+    {
+      "name": "lclab01vnet01",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('_artifactsLocation'), '/', variables('lclab01vnetTemplate'), parameters('_artifactsLocationSasToken'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "location": {
+            "value": "[resourceGroup().location]"
+          },
+          "virtualNetworkName": {
+            "value": "[variables('lclab01vnet01Name')]"
+          },
+          "virtualNetworkAddressRange": {
+            "value": "[variables('lclab01Prefix')]"
+          },
+          "subnetName": {
+            "value": "[variables('lclab01Subnet1Name')]"
+          },
+          "subnetRange": {
+            "value": "[variables('lclab01subnet1prefix')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "[variables('lclab01adds01NicName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', 'lclab01')]"
+      ],
+      "tags": {
+        "displayName": "lclab01adds01Nic"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[parameters('lclab01adds01IPAddress')]",
+              "subnet": {
+                "id": "[variables('lclab01adds01SubnetRef')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[parameters('lclab01adds01Name')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', variables('lclab01Name'))]",
+        "Microsoft.Resources/deployments/VNet"
+      ],
+      "tags": {
+        "displayName": "lclab01adds01"
+      },
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('lclab01adds01VmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('lclab01adds01Name')]",
+          "adminUsername": "[parameters('lclab01adds01AdminUsername')]",
+          "adminPassword": "[parameters('lclab01adds01AdminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('lclab01adds01ImagePublisher')]",
+            "offer": "[variables('lclab01adds01ImageOffer')]",
+            "sku": "[parameters('lclab01adds01WindowsOSVersion')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "lclab01adds01OSDisk",
+            "vhd": {
+              "uri": "[concat('http://', variables('lclab01Name'), '.blob.core.windows.net/', variables('lclab01adds01StorageAccountContainerName'), '/', variables('lclab01adds01OSDiskName'), '.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('lclab01adds01NicName'))]"
+            }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "name": "CreateADForest",
+          "type": "extensions",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2015-06-15",
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('lclab01adds01Name'))]"
+          ],
+          "tags": {
+            "displayName": "CreateADForest"
+          },
+          "properties": {
+            "publisher": "Microsoft.Powershell",
+            "type": "DSC",
+            "typeHandlerVersion": "2.9",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "modulesUrl": "[concat(parameters('_artifactsLocation'), '/', 'dsc.zip')]",
+              "sasToken": "[parameters('_artifactsLocationSasToken')]",
+              "configurationFunction": "[variables('CreateADForestConfigurationFunction')]",
+              "properties": {
+                "nodeName": "[parameters('lclab01adds01Name')]"
+              }
+            },
+            "protectedSettings": { }
+          }
+        }
+      ]
+    },
+    {
+      "name": "lclab01vnet01-with-dns-server",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', parameters('lclab01adds01name'),'/extensions/CreateADForest')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('_artifactsLocation'), '/', variables('lclab01vnetwithdnsTemplate'), parameters('_artifactsLocationSasToken'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "location": {
+            "value": "[resourceGroup().location]"
+          },
+          "virtualNetworkName": {
+            "value": "[variables('lclab01vnet01Name')]"
+          },
+          "virtualNetworkAddressRange": {
+            "value": "[variables('lclab01Prefix')]"
+          },
+          "subnetName": {
+            "value": "[variables('lclab01Subnet1Name')]"
+          },
+          "subnetRange": {
+            "value": "[variables('lclab01subnet1prefix')]"
+          },
+          "DNSServerAddress": {
+            "value": [
+              "[parameters('lclab01adds01IPAddress')]"
+            ]
+          }
+        }
+      }
+    }
+  ],
+    "outputs": {
+    }
+}

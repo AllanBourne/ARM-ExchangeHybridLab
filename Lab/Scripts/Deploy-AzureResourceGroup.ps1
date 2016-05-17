@@ -4,12 +4,12 @@
 
 Param(
     [string] [Parameter(Mandatory=$true)] $ResourceGroupLocation,
-    [string] $ResourceGroupName = 'ExchangeHybrid',
+    [string] $ResourceGroupName = 'LC01',
     [switch] $UploadArtifacts,
     [string] $StorageAccountName,
     [string] $StorageContainerName = $ResourceGroupName.ToLowerInvariant() + '-stageartifacts',
-    [string] $TemplateFile = '..\Templates\azuredeploy.json',
-    [string] $TemplateParametersFile = '..\Templates\azuredeploy.parameters.json',
+    [string] $TemplateFile = '..\Templates\WindowsVirtualMachine.json',
+    [string] $TemplateParametersFile = '..\Templates\WindowsVirtualMachine.parameters.json',
     [string] $ArtifactStagingDirectory = '..\bin\Debug\staging',
     [string] $DSCSourceFolder = '..\DSC'
 )
@@ -87,7 +87,7 @@ if ($UploadArtifacts) {
     if ($ArtifactsLocationSasToken -eq $null) {
         # Create a SAS token for the storage container - this gives temporary read-only access to the container
         $ArtifactsLocationSasToken = New-AzureStorageContainerSASToken -Container $StorageContainerName -Context $StorageAccountContext -Permission r -ExpiryTime (Get-Date).AddHours(4)
-        $ArtifactsLocationSasToken = ConvertTo-SecureString $ArtifactsLocationSasToken -AsPlainText -Force
+		$ArtifactsLocationSasToken = ConvertTo-SecureString $ArtifactsLocationSasToken -AsPlainText -Force
         $OptionalParameters[$ArtifactsLocationSasTokenName] = $ArtifactsLocationSasToken
     }
 }
