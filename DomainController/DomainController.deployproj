@@ -34,6 +34,8 @@
     <Content Include="Scripts\Deploy-AzureResourceGroup.ps1" />
     <Content Include="Templates\azuredeploy.json" />
     <Content Include="Templates\azuredeploy.parameters.json" />
+    <Content Include="DSC\testConfiguration.ps1" />
+    <None Include="Templates\json.json" />
     <None Include="Templates\vnet-with-dns-server.json" />
     <None Include="Templates\metadata.json" />
     <None Include="Templates\vnet.json" />

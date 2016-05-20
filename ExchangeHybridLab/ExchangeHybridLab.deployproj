@@ -25,21 +25,28 @@
   <Import Condition=" Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets') " Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets" />
   <!-- vertag<:>end -->
   <ItemGroup>
-    <Folder Include="Scripts\" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Deployment.targets">
       <Visible>False</Visible>
     </None>
     <Content Include="Scripts\Deploy-AzureResourceGroup.ps1" />
+    <Content Include="Templates\lab09.azuredeploy.parameters.json" />
+    <Content Include="Templates\lab08.azuredeploy.parameters.json" />
+    <Content Include="Templates\lab07.azuredeploy.parameters.json" />
     <Content Include="Templates\azuredeploy.json" />
     <Content Include="Templates\azuredeploy.parameters.json" />
     <None Include="DSC\cDisk\cDisk.psd1" />
     <None Include="DSC\cDisk\DSCResources\SAMPLE_cDiskNoRestart\SAMPLE_cDiskNoRestart.psm1" />
     <None Include="DSC\cDisk\DSCResources\SAMPLE_cDiskNoRestart\SAMPLE_cDiskNoRestart.schema.mof" />
+    <None Include="DSC\cDisk\xOU\1.0\DSCResources\MSFT_xADOrganizationalUnit\MSFT_xADOrganizationalUnit.psm1" />
+    <None Include="DSC\cDisk\xOU\1.0\DSCResources\MSFT_xADOrganizationalUnit\MSFT_xADOrganizationalUnit.schema.mof" />
+    <None Include="DSC\cDisk\xOU\1.0\Examples\xOUSample.ps1" />
+    <None Include="DSC\cDisk\xOU\1.0\IntegrationTests\MSFT_xADOrganizationalUnit_IntegrationTests.ps1" />
+    <None Include="DSC\cDisk\xOU\1.0\xOU.psd1" />
+    <None Include="DSC\cDisk\xOU\1.0\xOu_TechNetDocumentation.html" />
     <None Include="DSC\CreateADForest_old.ps1" />
     <Content Include="DSC\CreateADForest.ps1" />
     <Content Include="DSC\DeployADForestConfiguration.ps1" />
+    <Content Include="DSC\InstallExchange2013Configuration.ps1" />
     <None Include="DSC\xActiveDirectory\appveyor.yml" />
     <None Include="DSC\xActiveDirectory\Assert-HADC.ps1" />
     <None Include="DSC\xActiveDirectory\Assert-ParentChildDomains.ps1" />
@@ -97,12 +104,19 @@
     <None Include="DSC\xNetworking\Tests\Unit\MSFT_xFirewall.Tests.ps1" />
     <None Include="DSC\xNetworking\Tests\Unit\MSFT_xIPAddress.Tests.ps1" />
     <None Include="DSC\xNetworking\xNetworking.psd1" />
+    <None Include="DSC\xOU\1.0\DSCResources\MSFT_xADOrganizationalUnit\MSFT_xADOrganizationalUnit.psm1" />
+    <None Include="DSC\xOU\1.0\DSCResources\MSFT_xADOrganizationalUnit\MSFT_xADOrganizationalUnit.schema.mof" />
+    <None Include="DSC\xOU\1.0\Examples\xOUSample.ps1" />
+    <None Include="DSC\xOU\1.0\IntegrationTests\MSFT_xADOrganizationalUnit_IntegrationTests.ps1" />
+    <None Include="DSC\xOU\1.0\xOU.psd1" />
+    <None Include="DSC\xOU\1.0\xOu_TechNetDocumentation.html" />
     <None Include="DSC\xPendingReboot\DSCResources\MSFT_xPendingReboot\MSFT_xPendingReboot.psm1" />
     <None Include="DSC\xPendingReboot\DSCResources\MSFT_xPendingReboot\MSFT_xPendingReboot.schema.mof" />
     <None Include="DSC\xPendingReboot\xPendingReboot.psd1" />
     <None Include="DSC\xPendingReboot\xPendingReboot_Documentation.html" />
     <Content Include="Templates\vnet-with-dns-server.json" />
     <Content Include="Templates\vnet.json" />
+    <None Include="Scripts\ConfigurationData.psd1" />
   </ItemGroup>
   <Target Name="GetReferenceAssemblyPaths" />
 </Project>

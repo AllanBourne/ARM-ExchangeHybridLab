@@ -1,0 +1,37 @@
+﻿{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "labprefix": {
+            "value": "lclab08"
+        },
+        "labID": {
+            "value": "8"
+        },
+        "lclab01DomainName": {
+            "value": "lab08.lucisit.net"
+        },
+        "lclab01DN": {
+            "value": "DC=lab08,DC=lucisit,DC=net"
+        },
+        "lclab01addsAdminUserName": {
+            "value": "lcadmin"
+        },
+        "lclab01exchAdminUserName": {
+            "value": "lcadmin"
+        },
+        "lclab01Prefix": {
+            "value": "10.8.0.0/16"
+        },
+        "lclab01Subnet1Prefix": {
+            "value": "10.8.0.0/24"
+        },
+        "labAdminUserName": {
+            "value": "lcadmin"
+        },
+        "lclab01DomainNameNetbios": {
+            "value": "lab08"
+        }
+
+    }
+}

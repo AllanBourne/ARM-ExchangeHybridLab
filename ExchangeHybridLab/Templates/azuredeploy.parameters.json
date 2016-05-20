@@ -5,14 +5,29 @@
         "lclab01adds01Name": {
             "value": "lclab01adds01"
         },
-        "lclab01adds01AdminUserName": {
-            "value": "lcadmin"
-        },
         "lclab01DomainName": {
             "value": "lab01.lucisit.net"
         },
         "lclab01adds01PublicDnsName": {
             "value": "lclab01adds01t"
+        },
+        "lclab01exch01Name": {
+            "value": "lclab01exch01"
+        },
+        "lclab01exch01WindowsOSVersion": {
+            "value": "2012-R2-Datacenter"
+        },
+        "lclab01exch01PublicDnsName": {
+            "value": "lclab01exch01"
+        },
+        "lclab01addsAdminUserName": {
+            "value": "lcadmin"
+        },
+        "lclab01exchAdminUserName": {
+            "value": "lcadmin"
+        },
+        "lclab01DN": {
+            "value": "DC=lab01,DC=lucisit,DC=net"
         }
     }
 }
