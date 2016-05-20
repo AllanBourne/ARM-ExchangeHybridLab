@@ -118,5 +118,8 @@
     <Content Include="Templates\vnet.json" />
     <None Include="Scripts\ConfigurationData.psd1" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="DSC\Test\" />
+  </ItemGroup>
   <Target Name="GetReferenceAssemblyPaths" />
 </Project>
