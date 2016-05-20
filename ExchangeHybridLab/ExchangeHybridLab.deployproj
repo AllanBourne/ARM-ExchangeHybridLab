@@ -29,6 +29,7 @@
       <Visible>False</Visible>
     </None>
     <Content Include="Scripts\Deploy-AzureResourceGroup.ps1" />
+    <Content Include="Templates\lab10.azuredeploy.parameters.json" />
     <Content Include="Templates\lab09.azuredeploy.parameters.json" />
     <Content Include="Templates\lab08.azuredeploy.parameters.json" />
     <Content Include="Templates\lab07.azuredeploy.parameters.json" />
@@ -117,9 +118,6 @@
     <Content Include="Templates\vnet-with-dns-server.json" />
     <Content Include="Templates\vnet.json" />
     <None Include="Scripts\ConfigurationData.psd1" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="DSC\Test\" />
   </ItemGroup>
   <Target Name="GetReferenceAssemblyPaths" />
 </Project>
