@@ -98,6 +98,12 @@
     "DeployADForestConfigurationScriptFunction": "Main",
     "InstallExchange2013ConfigurationScript": "InstallExchange2013Configuration.ps1",
     "InstallExchange2013ConfigurationScriptFunction": "Main",
+    
+    "InstallAADConnectConfigurationScript": "InstallAADConnectConfiguration.ps1",
+    "InstallAADConnectConfigurationScriptFunction": "Main",
+    "InstallAADConnectSourcePath": "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi",
+    "InstallAADConnectTargetPath": "f:\\downloads",
+
     "DSCConfigurationDataPath": "/ExchangeHybridLab/Scripts/ConfigurationData.psd1",
 
     "lclab01Name": "[concat(parameters('labprefix'), uniqueString(resourceGroup().id))]",
@@ -337,6 +343,48 @@
                   "userName": "[parameters('labAdminUserName')]",
                   "password": "[parameters('labAdminPassword')]"
                 }
+              },
+              "configurationUrlSasToken": "[parameters('_artifactsLocationSasToken')]",
+              "configurationDataUrlSasToken": "[parameters('_artifactsLocationSasToken')]"
+            }
+          }
+        },
+        {
+          "name": "InstallAADConnect",
+          "type": "extensions",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2015-06-15",
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', variables('lclab01adds01name'),'/extensions/DeployADForest')]"
+          ],
+          "tags": {
+            "displayName": "InstallAADConnect"
+          },
+          "properties": {
+            "publisher": "Microsoft.Powershell",
+            "type": "DSC",
+            "typeHandlerVersion": "2.9",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "wmfVersion": "latest",
+              "configuration": {
+                "url": "[concat(parameters('_artifactsLocation'), '/', 'dsc.zip')]",
+                "script": "[variables('InstallAADConnectConfigurationScript')]",
+                "function": "[variables('InstallAADConnectConfigurationScriptFunction')]"
+              },
+              "configurationArguments": {
+                "sourcePath": "[variables('InstallAADConnectSourcePath')]",
+                "targetPath": "[variables('InstallAADConnectTargetPath')]"
+              },
+              "configurationData": {
+                "url": "[concat(parameters('_artifactsLocation'), '/', 'ConfigurationData.psd1')]"
+              },
+              "privacy": {
+                "dataCollection": "enable"
+              }
+            },
+            "protectedSettings": {
+              "configurationArguments": {
               },
               "configurationUrlSasToken": "[parameters('_artifactsLocationSasToken')]",
               "configurationDataUrlSasToken": "[parameters('_artifactsLocationSasToken')]"

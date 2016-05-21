@@ -28,6 +28,7 @@
     <None Include="Deployment.targets">
       <Visible>False</Visible>
     </None>
+    <Content Include="DSC\InstallAADConnectConfiguration.ps1" />
     <Content Include="Scripts\Deploy-AzureResourceGroup.ps1" />
     <Content Include="Templates\lab10.azuredeploy.parameters.json" />
     <Content Include="Templates\lab09.azuredeploy.parameters.json" />
@@ -44,10 +45,7 @@
     <None Include="DSC\cDisk\xOU\1.0\IntegrationTests\MSFT_xADOrganizationalUnit_IntegrationTests.ps1" />
     <None Include="DSC\cDisk\xOU\1.0\xOU.psd1" />
     <None Include="DSC\cDisk\xOU\1.0\xOu_TechNetDocumentation.html" />
-    <None Include="DSC\CreateADForest_old.ps1" />
-    <Content Include="DSC\CreateADForest.ps1" />
     <Content Include="DSC\DeployADForestConfiguration.ps1" />
-    <Content Include="DSC\InstallExchange2013Configuration-old.ps1" />
     <None Include="DSC\InstallExchange2013Configuration.ps1" />
     <None Include="DSC\xActiveDirectory\appveyor.yml" />
     <None Include="DSC\xActiveDirectory\Assert-HADC.ps1" />
@@ -282,7 +280,6 @@
     <None Include="DSC\xPendingReboot\xPendingReboot_Documentation.html" />
     <Content Include="Templates\vnet-with-dns-server.json" />
     <Content Include="Templates\vnet.json" />
-    <None Include="Templates\azuredeploy-exchange.json" />
   </ItemGroup>
   <Target Name="GetReferenceAssemblyPaths" />
 </Project>

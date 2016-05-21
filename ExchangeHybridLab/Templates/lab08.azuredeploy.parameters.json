@@ -14,12 +14,6 @@
         "lclab01DN": {
             "value": "DC=lab08,DC=lucisit,DC=net"
         },
-        "lclab01addsAdminUserName": {
-            "value": "lcadmin"
-        },
-        "lclab01exchAdminUserName": {
-            "value": "lcadmin"
-        },
         "lclab01Prefix": {
             "value": "10.8.0.0/16"
         },
