@@ -131,7 +131,7 @@
     "lclab01exch01DataDiskSize": "20",
     "lclab01exch01VmSize": "Standard_D2",
     "lclab01exch01VnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('lclab01vnet01Name'))]",
-    "lclab01exch01SubnetRef": "[concat(variables('lclab01adds01VnetID'), '/subnets/', variables('lclab01Subnet1Name'))]",
+    "lclab01exch01SubnetRef": "[concat(variables('lclab01exch01VnetID'), '/subnets/', variables('lclab01Subnet1Name'))]",
     "lclab01exch01StorageAccountContainerName": "vhds",
     "lclab01exch01NicName": "[concat(variables('lclab01exch01Name'), 'NetworkInterface')]",
     "lclab01exch01PublicName": "[concat(variables('lclab01exch01Name'), 'Public')]",
@@ -601,7 +601,8 @@
               },
               "configurationArguments": {
                 "domainName": "[parameters('lclab01DomainName')]",
-                "domainNameNetbios": "[parameters('lclab01DomainNameNetbios')]"
+                "domainNameNetbios": "[parameters('lclab01DomainNameNetbios')]",
+                "ExchangeOrgName": "[parameters('labprefix')]"
               },
               "configurationData": {
                 "url": "[concat(parameters('_artifactsLocation'), '/', 'ConfigurationData.psd1')]"

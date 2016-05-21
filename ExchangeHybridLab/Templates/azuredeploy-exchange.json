@@ -1,0 +1,264 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+
+
+  "parameters": {
+    "_artifactsLocation": {
+      "type": "string",
+      "metadata": {
+        "description": "Auto-generated container in staging storage account to receive post-build staging folder upload"
+      }
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Auto-generated token to access _artifactsLocation"
+      }
+    },
+    "labprefix": {
+      "type": "string"
+    },
+    "labID": {
+      "type": "string"
+    },
+
+    "lclab01Type": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS",
+        "Standard_GRS",
+        "Standard_RAGRS",
+        "Premium_LRS"
+      ]
+    },
+    "lclab01DomainName": {
+      "type": "string"
+    },
+    "lclab01DomainNameNetbios": {
+      "type": "string"
+    },
+    "lclab01DN": {
+      "type": "string"
+    },
+    "lclab01DomainJoinOptions": {
+      "type": "string",
+      "defaultValue": "3"
+    },
+    "labAdminUserName": {
+      "type": "string"
+    },
+    "labAdminPassword": {
+      "type": "securestring"
+    },
+    "lclab01adds01WindowsOSVersion": {
+      "type": "string",
+      "defaultValue": "2012-R2-Datacenter",
+      "allowedValues": [
+        "2008-R2-SP1",
+        "2012-Datacenter",
+        "2012-R2-Datacenter",
+        "Windows-Server-Technical-Preview"
+      ]
+    },
+    "lclab01exch01WindowsOSVersion": {
+      "type": "string",
+      "defaultValue": "2012-R2-Datacenter",
+      "allowedValues": [
+        "2008-R2-SP1",
+        "2012-Datacenter",
+        "2012-R2-Datacenter",
+        "Windows-Server-Technical-Preview"
+      ]
+    },
+    "lclab01Prefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/16"
+    },
+    "lclab01Subnet1Prefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/24"
+    },
+
+    "lclab01cli01WindowsOSVersion": {
+      "type": "string",
+      "defaultValue": "2012-R2-Datacenter",
+      "allowedValues": [
+        "2008-R2-SP1",
+        "2012-Datacenter",
+        "2012-R2-Datacenter",
+        "Windows-Server-Technical-Preview"
+      ]
+    }
+
+  },
+  "variables": {
+    "labName": "[concat(parameters('labprefix'), uniqueString(resourceGroup().id))]",
+    "DeployADForestConfigurationScript": "DeployADForestConfiguration.ps1",
+    "DeployADForestConfigurationScriptFunction": "Main",
+    "InstallExchange2013ConfigurationScript": "InstallExchange2013Configuration.ps1",
+    "InstallExchange2013ConfigurationScriptFunction": "Main",
+    "DSCConfigurationDataPath": "/ExchangeHybridLab/Scripts/ConfigurationData.psd1",
+
+    "lclab01Name": "[concat(parameters('labprefix'), uniqueString(resourceGroup().id))]",
+    "lclab01Subnet1Name": "Subnet-1",
+
+    "lclab01vnet01Name": "[concat(parameters('labprefix'), 'vnet01')]",
+    "lclab01vnetTemplate": "ExchangeHybridLab/Templates/vnet.json",
+    "lclab01vnetwithdnsTemplate": "ExchangeHybridLab/Templates/vnet-with-dns-server.json",
+
+
+    "lclab01adds01Name": "[concat(parameters('labprefix'), 'adds01')]",
+    "lclab01adds01ImagePublisher": "MicrosoftWindowsServer",
+    "lclab01adds01ImageOffer": "WindowsServer",
+    "lclab01adds01OSDiskName": "[concat(variables('lclab01adds01Name'), 'OSDisk')]",
+    "lclab01adds01DataDiskName": "[concat(variables('lclab01adds01Name'), 'DataDisk')]",
+    "lclab01adds01DataDiskSize": "20",
+    "lclab01adds01VmSize": "Standard_D2",
+    "lclab01adds01VnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('lclab01vnet01Name'))]",
+    "lclab01adds01SubnetRef": "[concat(variables('lclab01adds01VnetID'), '/subnets/', variables('lclab01Subnet1Name'))]",
+    "lclab01adds01StorageAccountContainerName": "vhds",
+    "lclab01adds01NicName": "[concat(variables('lclab01adds01Name'), 'NetworkInterface')]",
+    "lclab01adds01IPAddress": "[concat('10.', parameters('labID'), '.0.4')]",
+    "lclab01adds01PublicName": "[concat(variables('lclab01adds01Name'), 'Public')]",
+    "lclab01adds01PublicDnsName": "[variables('lclab01adds01Name')]",
+
+    "lclab01exch01Name": "[concat(parameters('labprefix'), 'exch01')]",
+    "lclab01exch01ImagePublisher": "MicrosoftWindowsServer",
+    "lclab01exch01ImageOffer": "WindowsServer",
+    "lclab01exch01OSDiskName": "[concat(variables('lclab01exch01Name'), 'OSDisk')]",
+    "lclab01exch01DataDiskName": "[concat(variables('lclab01exch01Name'), 'DataDisk')]",
+    "lclab01exch01DataDiskSize": "20",
+    "lclab01exch01VmSize": "Standard_D2",
+    "lclab01exch01VnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('lclab01vnet01Name'))]",
+    "lclab01exch01SubnetRef": "[concat(variables('lclab01exch01VnetID'), '/subnets/', variables('lclab01Subnet1Name'))]",
+    "lclab01exch01StorageAccountContainerName": "vhds",
+    "lclab01exch01NicName": "[concat(variables('lclab01exch01Name'), 'NetworkInterface')]",
+    "lclab01exch01PublicName": "[concat(variables('lclab01exch01Name'), 'Public')]",
+    "lclab01exch01PublicDnsName": "[variables('lclab01exch01Name')]",
+    "lclab01exch01NSGName": "[concat(variables('lclab01exch01Name'), 'NSG')]",
+
+    "lclab01cli01Name": "[concat(parameters('labprefix'), 'cli01')]",
+    "lclab01cli01ImagePublisher": "MicrosoftWindowsServer",
+    "lclab01cli01ImageOffer": "WindowsServer",
+    "lclab01cli01OSDiskName": "lclab01cli01OSDisk",
+    "lclab01cli01VmSize": "Standard_D1",
+    "lclab01cli01VnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('lclab01vnet01Name'))]",
+    "lclab01cli01SubnetRef": "[concat(variables('lclab01cli01VnetID'), '/subnets/', variables('lclab01Subnet1Name'))]",
+    "lclab01cli01StorageAccountContainerName": "vhds",
+    "lclab01cli01NicName": "[concat(variables('lclab01cli01Name'), 'NetworkInterface')]",
+    "lclab01cli01PublicName": "[concat(variables('lclab01cli01Name'), 'Public')]",
+    "lclab01cli01PublicDnsName": "[variables('lclab01cli01Name')]"
+  },
+  "resources": [
+
+    {
+      "name": "[variables('lclab01exch01Name')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', variables('lclab01Name'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('lclab01exch01NicName'))]"
+      ],
+      "tags": {
+        "displayName": "lclab01exch01"
+      },
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('lclab01exch01VmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[variables('lclab01exch01Name')]",
+          "adminUsername": "[parameters('labAdminUserName')]",
+          "adminPassword": "[parameters('labAdminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('lclab01exch01ImagePublisher')]",
+            "offer": "[variables('lclab01exch01ImageOffer')]",
+            "sku": "[parameters('lclab01exch01WindowsOSVersion')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "lclab01exch01OSDisk",
+            "vhd": {
+              "uri": "[concat('http://', variables('lclab01Name'), '.blob.core.windows.net/', variables('lclab01exch01StorageAccountContainerName'), '/', variables('lclab01exch01OSDiskName'), '.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          },
+          "dataDisks": [
+            {
+              "name": "lclab01exch01DataDisk",
+              "vhd": {
+                "uri": "[concat('http://', variables('lclab01Name'), '.blob.core.windows.net/', variables('lclab01exch01StorageAccountContainerName'), '/', variables('lclab01exch01DataDiskName'), '.vhd')]"
+              },
+              "caching": "None",
+              "createOption": "Empty",
+              "diskSizeGB": "[variables('lclab01exch01DataDiskSize')]",
+              "lun": 0
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('lclab01exch01NicName'))]"
+            }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "name": "InstallExchange2013",
+          "type": "extensions",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2015-06-15",
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', variables('lclab01exch01Name'))]"
+          ],
+          "tags": {
+            "displayName": "InstallExchange2013"
+          },
+          "properties": {
+            "publisher": "Microsoft.Powershell",
+            "type": "DSC",
+            "typeHandlerVersion": "2.9",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "wmfVersion": "latest",
+              "configuration": {
+                "url": "[concat(parameters('_artifactsLocation'), '/', 'dsc.zip')]",
+                "script": "[variables('InstallExchange2013ConfigurationScript')]",
+                "function": "[variables('InstallExchange2013ConfigurationScriptFunction')]"
+              },
+              "configurationArguments": {
+                "domainName": "[parameters('lclab01DomainName')]",
+                "domainNameNetbios": "[parameters('lclab01DomainNameNetbios')]"
+              },
+              "configurationData": {
+                "url": "[concat(parameters('_artifactsLocation'), '/', 'ConfigurationData.psd1')]"
+              },
+              "privacy": {
+                "dataCollection": "enable"
+              }
+            },
+            "protectedSettings": {
+              "configurationArguments": {
+
+              },
+              "configurationUrlSasToken": "[parameters('_artifactsLocationSasToken')]",
+              "configurationDataUrlSasToken": "[parameters('_artifactsLocationSasToken')]"
+            }
+          }
+        }
+      ]
+    }
+
+  ]
+
+
+}
