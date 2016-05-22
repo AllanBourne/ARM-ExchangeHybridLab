@@ -1,12 +1,10 @@
 Configuration Main
 {
 
-Param ( [string]$SourcePath, [string]$TargetFolder, [Int]$RetryCount=20, [Int]$RetryIntervalSec=30 )
+Param ( [string]$SourcePath, [string]$TargetPath, [Int]$RetryCount=20, [Int]$RetryIntervalSec=30 )
 
 Import-DscResource -ModuleName PSDesiredStateConfiguration
-
-	$TargetPath = $TargetFolder.TrimEnd("\").Replace("\\","\") + "\" + $sourcepath.Split("/")[$sourcepath.Split("/").Length-1]
-
+	
 	Node localhost
 	{
         LocalConfigurationManager            
@@ -19,10 +17,13 @@ Import-DscResource -ModuleName PSDesiredStateConfiguration
 		Script DownloadAADConnect
 		{
 			TestScript = {
-				Test-Path $TargetPath
+				Test-Path ($Using:TargetPath).Replace("\\","\")
 			}
 			SetScript ={
-				Invoke-WebRequest $SourcePath -OutFile $TargetPath
+                $fldr = $using:TargetPath
+                $fldr = $fldr.Substring(0,$fldr.LastIndexOf("\")).TrimEnd("\").Replace("\\","\")
+				if (-not (test-Path $fldr)) { New-Item $fldr -Type Directory }
+                Invoke-WebRequest $Using:SourcePath -OutFile ($Using:TargetPath).Replace("\\","\")
 			}
 			GetScript = {@{Result = "DownloadAADConnect"}}
 		}
@@ -34,7 +35,7 @@ Import-DscResource -ModuleName PSDesiredStateConfiguration
 			}
 			SetScript ={
 				$appArgs = "/q"
-				Start-Process $TargetPath $appArgs -PassThru | Wait-Process
+				Start-Process (($Using:TargetPath).Replace("\\","\")) $appArgs -PassThru | Wait-Process
 			}
 			GetScript = {@{Result = "InstallAADConnect"}}
 			DependsOn = "[Script]DownloadAADConnect"

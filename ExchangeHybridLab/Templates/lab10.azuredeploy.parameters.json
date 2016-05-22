@@ -3,28 +3,28 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "labprefix": {
-            "value": "lclab09"
+            "value": "lclab10"
         },
         "labID": {
-            "value": "9"
+            "value": "10"
         },
         "lclab01DomainName": {
-            "value": "lab09.lucisit.net"
+            "value": "lab10.lucisit.net"
         },
         "lclab01DN": {
-            "value": "DC=lab09,DC=lucisit,DC=net"
+            "value": "DC=lab10,DC=lucisit,DC=net"
         },
         "lclab01Prefix": {
-            "value": "10.9.0.0/16"
+            "value": "10.10.0.0/16"
         },
         "lclab01Subnet1Prefix": {
-            "value": "10.9.0.0/24"
+            "value": "10.10.0.0/24"
         },
         "labAdminUserName": {
             "value": "lcadmin"
         },
         "lclab01DomainNameNetbios": {
-            "value": "lab09"
+            "value": "lab10"
         }
 
     }

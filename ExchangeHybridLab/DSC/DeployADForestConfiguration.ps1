@@ -1,7 +1,7 @@
 Configuration Main
 {
 
-Param ( [PSCredential]$AdminCredential, [string]$DomainName, [string]$domainNameNetbios, [Int]$RetryCount=20, [Int]$RetryIntervalSec=30 )
+Param ( [PSCredential]$AdminCredential, [string]$DomainName, [string]$domainNameNetbios, [string]$domainDN, [Int]$RetryCount=20, [Int]$RetryIntervalSec=30 )
 
 Import-DscResource -ModuleName PSDesiredStateConfiguration, xActiveDirectory, xDisk, xNetworking, xPendingReboot, cDisk, xOU
 [PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${domainNameNetbios}\$($AdminCredential.UserName)", $AdminCredential.Password)
@@ -13,22 +13,7 @@ Import-DscResource -ModuleName PSDesiredStateConfiguration, xActiveDirectory, xD
             ActionAfterReboot = 'ContinueConfiguration'            
             ConfigurationMode = 'ApplyOnly'            
             RebootNodeIfNeeded = $true            
-        } 
-
-        WindowsFeature DNS 
-        { 
-            Ensure = "Present" 
-            Name = "DNS"
         }
-
-		xDnsServerAddress DnsServerAddress 
-        { 
-            Address        = '127.0.0.1' 
-            InterfaceAlias = 'Ethernet'
-            AddressFamily  = 'IPv4'
-            DependsOn = "[WindowsFeature]DNS"
-        }
-
 
         xWaitforDisk Disk2
         {
@@ -43,11 +28,56 @@ Import-DscResource -ModuleName PSDesiredStateConfiguration, xActiveDirectory, xD
             DriveLetter = "F"
         }
 
-		WindowsFeature ADDSInstall 
+        WindowsFeature DNS 
+        { 
+            Ensure = "Present" 
+            Name = "DNS"
+        }
+
+		WindowsFeature AADRSAT 
+        { 
+            Ensure = "Present" 
+            Name = "RSAT-ADDS-Tools"
+        }
+
+		WindowsFeature DNSRSAT
+        { 
+            Ensure = "Present" 
+            Name = "RSAT-DNS-Server"
+        }
+
+		WindowsFeature ADSPSRSAT
+        {            
+            Ensure = "Present"
+            Name = "RSAT-AD-PowerShell"
+        }
+
+        WindowsFeature ADDSInstall 
         { 
             Ensure = "Present" 
             Name = "AD-Domain-Services"
-        }  
+        }
+
+		xDnsServerAddress DnsServerAddress 
+        { 
+            Address        = '127.0.0.1' 
+            InterfaceAlias = 'Ethernet'
+            AddressFamily  = 'IPv4'
+            DependsOn = "[WindowsFeature]DNS"
+        }
+  
+  		Script SetDNSForwarders
+		{
+			TestScript = {
+				if (Get-DnsServerForwarder | where {$_.IPAddress -eq "8.8.8.8"}) { $true } Else { $false }
+			}
+			SetScript ={
+				Add-DnsServerForwarder -IPAddress "8.8.8.8"
+			}
+			GetScript = {@{Result = "SetDNSForwarders"}}
+			DependsOn = "[WindowsFeature]DNS"
+		}
+
 
         xADDomain FirstDS 
         {
@@ -75,49 +105,17 @@ Import-DscResource -ModuleName PSDesiredStateConfiguration, xActiveDirectory, xD
             DependsOn = "[xWaitForADDomain]DscForestWait"
         }
 
-
-		WindowsFeature AADRSAT 
-        { 
-            Ensure = "Present" 
-            Name = "RSAT-ADDS-Tools"
-        }
-
-		WindowsFeature DNSRSAT
-        { 
-            Ensure = "Present" 
-            Name = "RSAT-DNS-Server"
-        }
-
-		WindowsFeature InstallRSATADPowerShell
-        {            
-            Ensure = "Present"
-            Name = "RSAT-AD-PowerShell"
-        }
-		
-		
 		xADOrganizationalUnit ServersOU
         {
             Ensure = "Present"
             Name = "Servers"
-            Path = (Get-ADDomain).DistinguishedName
+            Path = $domainDN
             Credential = $DomainCreds
             ProtectedFromAccidentalDeletion = "Yes"
-            Description = "This is a sample OU"
-            DependsOn = "[WindowsFeature]InstallRSATADPowerShell"
+            Description = "Servers OU"
+            DependsOn = "[xWaitForADDomain]DscForestWait","[xPendingReboot]Reboot1"
         }
-		
 
-		Script SetDNSForwarders
-		{
-			TestScript = {
-				if (Get-DnsServerForwarder | where {$_.IPAddress -eq "8.8.8.8"}) { $true } Else { $false }
-			}
-			SetScript ={
-				Add-DnsServerForwarder -IPAddress "8.8.8.8"
-			}
-			GetScript = {@{Result = "SetDNSForwarders"}}
-			DependsOn = "[WindowsFeature]DNS"
-		}
 
 	}
 

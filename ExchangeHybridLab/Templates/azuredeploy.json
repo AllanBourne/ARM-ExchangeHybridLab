@@ -93,16 +93,18 @@
 
   },
   "variables": {
+    "apiVersion": "2016-04-01",
+
     "labName": "[concat(parameters('labprefix'), uniqueString(resourceGroup().id))]",
     "DeployADForestConfigurationScript": "DeployADForestConfiguration.ps1",
     "DeployADForestConfigurationScriptFunction": "Main",
     "InstallExchange2013ConfigurationScript": "InstallExchange2013Configuration.ps1",
     "InstallExchange2013ConfigurationScriptFunction": "Main",
-    
+
     "InstallAADConnectConfigurationScript": "InstallAADConnectConfiguration.ps1",
     "InstallAADConnectConfigurationScriptFunction": "Main",
     "InstallAADConnectSourcePath": "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi",
-    "InstallAADConnectTargetFolder": "f:\\downloads",
+    "InstallAADConnectTargetPath": "f:\\downloads\\AzureADConnect.msi",
 
     "DSCConfigurationDataPath": "/ExchangeHybridLab/Scripts/ConfigurationData.psd1",
 
@@ -328,7 +330,8 @@
               },
               "configurationArguments": {
                 "domainName": "[parameters('lclab01DomainName')]",
-                "domainNameNetbios": "[parameters('lclab01DomainNameNetbios')]"
+                "domainNameNetbios": "[parameters('lclab01DomainNameNetbios')]",
+                "domainDN": "[parameters('lclab01DN')]"
               },
               "configurationData": {
                 "url": "[concat(parameters('_artifactsLocation'), '/', 'ConfigurationData.psd1')]"
@@ -355,6 +358,7 @@
           "location": "[resourceGroup().location]",
           "apiVersion": "2015-06-15",
           "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', variables('lclab01adds01Name'))]",
             "[concat('Microsoft.Compute/virtualMachines/', variables('lclab01adds01name'),'/extensions/DeployADForest')]"
           ],
           "tags": {
@@ -374,7 +378,7 @@
               },
               "configurationArguments": {
                 "sourcePath": "[variables('InstallAADConnectSourcePath')]",
-                "targetFolder": "[variables('InstallAADConnectTargetFolder')]"
+                "targetFolder": "[variables('InstallAADConnectTargetPath')]"
               },
               "configurationData": {
                 "url": "[concat(parameters('_artifactsLocation'), '/', 'ConfigurationData.psd1')]"
@@ -605,7 +609,8 @@
             "displayName": "joindomain"
           },
           "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', variables('lclab01exch01Name'))]"
+            "[concat('Microsoft.Compute/virtualMachines/', variables('lclab01exch01Name'))]",
+            "[concat('Microsoft.Compute/virtualMachines/', variables('lclab01adds01name'),'/extensions/DeployADForest')]"
           ],
           "properties": {
             "publisher": "Microsoft.Compute",
@@ -671,6 +676,36 @@
             }
           }
         }
+      ]
+    },
+    {
+      "type": "Microsoft.Network/dnszones",
+      "name": "[parameters('lclab01DomainName')]",
+      "apiVersion": "2016-04-01",
+      "location": "global",
+      "tags": {
+        "displayName": "PublicDNSZone"
+      },
+      "properties": { }
+    },
+    {
+      "type": "Microsoft.Network/dnszones/CNAME",
+      "name": "[concat(parameters('lclab01DomainName'), concat('/autodiscover'))]",
+      "apiVersion": "2016-04-01",
+      "location": "global",
+      "tags": {
+        "displayName": "PublicDNSRecordAutodiscover"
+      },
+      "properties": {
+        "TTL": 3600,
+        "CNAMERecords": [
+          {
+            "autodiscover": "[concat(variables('lclab01exch01Name'),'.westus.cloudapp.azure.com')]"
+          }
+        ]
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/dnszones/', parameters('lclab01DomainName'))]"
       ]
     },
     {
@@ -774,7 +809,8 @@
             "displayName": "joindomain"
           },
           "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', variables('lclab01cli01Name'))]"
+            "[concat('Microsoft.Compute/virtualMachines/', variables('lclab01cli01Name'))]",
+            "[concat('Microsoft.Compute/virtualMachines/', variables('lclab01adds01name'),'/extensions/DeployADForest')]"
           ],
           "properties": {
             "publisher": "Microsoft.Compute",
