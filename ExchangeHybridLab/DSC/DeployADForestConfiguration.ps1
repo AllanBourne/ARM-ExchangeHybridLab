@@ -1,10 +1,11 @@
 Configuration Main
 {
 
-Param ( [PSCredential]$AdminCredential, [string]$DomainName, [string]$domainNameNetbios, [string]$domainDN, [Int]$RetryCount=20, [Int]$RetryIntervalSec=30 )
+	Param ( [PSCredential]$AdminCredential, [string]$DomainName, [string]$domainNameNetbios, [string]$domainDN, [string]$SourcePath, [string]$TargetPath, [Int]$RetryCount=20, [Int]$RetryIntervalSec=30 )
 
-Import-DscResource -ModuleName PSDesiredStateConfiguration, xActiveDirectory, xDisk, xNetworking, xPendingReboot, cDisk, xOU
-[PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${domainNameNetbios}\$($AdminCredential.UserName)", $AdminCredential.Password)
+	Import-DscResource -ModuleName PSDesiredStateConfiguration, xActiveDirectory, xDisk, xNetworking, xPendingReboot, cDisk, xOU
+	[PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${domainNameNetbios}\$($AdminCredential.UserName)", $AdminCredential.Password)
+
 
 	Node localhost
 	{
@@ -116,6 +117,34 @@ Import-DscResource -ModuleName PSDesiredStateConfiguration, xActiveDirectory, xD
             DependsOn = "[xWaitForADDomain]DscForestWait","[xPendingReboot]Reboot1"
         }
 
+		Script DownloadAADConnect
+		{
+			TestScript = {
+				Test-Path ($Using:TargetPath).Replace("\\","\")
+			}
+			SetScript ={
+                $fldr = $using:TargetPath
+                $fldr = $fldr.Substring(0,$fldr.LastIndexOf("\")).TrimEnd("\").Replace("\\","\")
+				if (-not (test-Path $fldr)) { New-Item $fldr -Type Directory }
+                Invoke-WebRequest $Using:SourcePath -OutFile ($Using:TargetPath).Replace("\\","\")
+			}
+			GetScript = {@{Result = "DownloadAADConnect"}}
+			DependsOn = "[xWaitForADDomain]DscForestWait","[xPendingReboot]Reboot1"
+		}
+
+		Script InstallAADConnect
+		{
+			TestScript = {
+				if (get-childitem "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\" | Get-ItemProperty -Name DisplayName -ErrorAction SilentlyContinue | where {$_.DisplayName -like "Microsoft Azure AD Connect"}) { $true } else {$false}
+			}
+			SetScript ={
+				$appArgs = "/q"
+				Start-Process (($Using:TargetPath).Replace("\\","\")) $appArgs -PassThru | Wait-Process
+			}
+			GetScript = {@{Result = "InstallAADConnect"}}
+			DependsOn = "[Script]DownloadAADConnect"
+
+		}
 
 	}
 

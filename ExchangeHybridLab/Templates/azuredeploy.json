@@ -331,7 +331,9 @@
               "configurationArguments": {
                 "domainName": "[parameters('lclab01DomainName')]",
                 "domainNameNetbios": "[parameters('lclab01DomainNameNetbios')]",
-                "domainDN": "[parameters('lclab01DN')]"
+                "domainDN": "[parameters('lclab01DN')]",
+                "sourcePath": "[variables('InstallAADConnectSourcePath')]",
+                "targetPath": "[variables('InstallAADConnectTargetPath')]"
               },
               "configurationData": {
                 "url": "[concat(parameters('_artifactsLocation'), '/', 'ConfigurationData.psd1')]"
@@ -346,49 +348,6 @@
                   "userName": "[parameters('labAdminUserName')]",
                   "password": "[parameters('labAdminPassword')]"
                 }
-              },
-              "configurationUrlSasToken": "[parameters('_artifactsLocationSasToken')]",
-              "configurationDataUrlSasToken": "[parameters('_artifactsLocationSasToken')]"
-            }
-          }
-        },
-        {
-          "name": "InstallAADConnect",
-          "type": "extensions",
-          "location": "[resourceGroup().location]",
-          "apiVersion": "2015-06-15",
-          "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', variables('lclab01adds01Name'))]",
-            "[concat('Microsoft.Compute/virtualMachines/', variables('lclab01adds01name'),'/extensions/DeployADForest')]"
-          ],
-          "tags": {
-            "displayName": "InstallAADConnect"
-          },
-          "properties": {
-            "publisher": "Microsoft.Powershell",
-            "type": "DSC",
-            "typeHandlerVersion": "2.9",
-            "autoUpgradeMinorVersion": true,
-            "settings": {
-              "wmfVersion": "latest",
-              "configuration": {
-                "url": "[concat(parameters('_artifactsLocation'), '/', 'dsc.zip')]",
-                "script": "[variables('InstallAADConnectConfigurationScript')]",
-                "function": "[variables('InstallAADConnectConfigurationScriptFunction')]"
-              },
-              "configurationArguments": {
-                "sourcePath": "[variables('InstallAADConnectSourcePath')]",
-                "targetFolder": "[variables('InstallAADConnectTargetPath')]"
-              },
-              "configurationData": {
-                "url": "[concat(parameters('_artifactsLocation'), '/', 'ConfigurationData.psd1')]"
-              },
-              "privacy": {
-                "dataCollection": "enable"
-              }
-            },
-            "protectedSettings": {
-              "configurationArguments": {
               },
               "configurationUrlSasToken": "[parameters('_artifactsLocationSasToken')]",
               "configurationDataUrlSasToken": "[parameters('_artifactsLocationSasToken')]"
@@ -698,11 +657,10 @@
       },
       "properties": {
         "TTL": 3600,
-        "CNAMERecords": [
+        "CNAMERecord": 
           {
             "autodiscover": "[concat(variables('lclab01exch01Name'),'.westus.cloudapp.azure.com')]"
           }
-        ]
       },
       "dependsOn": [
         "[concat('Microsoft.Network/dnszones/', parameters('lclab01DomainName'))]"

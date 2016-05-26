@@ -7,9 +7,8 @@ Configuration Main
     [PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${domainNameNetbios}\$($AdminCredential.UserName)", $AdminCredential.Password)
 
 
-	Node "lclab09exch01"
-		{
-
+	Node localhost
+	{
 		LocalConfigurationManager            
 		{            
 			ActionAfterReboot = 'ContinueConfiguration'            
@@ -19,9 +18,9 @@ Configuration Main
 
 		xWaitforDisk Disk2
 		{
-				DiskNumber = 2
-				RetryIntervalSec =$RetryIntervalSec
-				RetryCount = $RetryCount
+			DiskNumber = 2
+			RetryIntervalSec =$RetryIntervalSec
+			RetryCount = $RetryCount
 		}
 
 		cDiskNoRestart ADDataDisk
@@ -238,15 +237,11 @@ Configuration Main
 			Name = "Windows-Identity-Foundation"
 		}
 		
-		Script CreateFolderDownloads
+		File CreateDownloadFolder
 		{
-			TestScript = {
-				Test-Path "f:\Downloads"
-			}
-			SetScript ={
-				New-Item f:\downloads -ItemType Directory
-			}
-			GetScript = {@{Result = "CreateFolderDownloads"}}
+			DestinationPath = "f:\Downloads"
+			Ensure = "Present"
+			Type = "Directory"
 		}
 
 
@@ -261,9 +256,10 @@ Configuration Main
 				Invoke-WebRequest $source -OutFile $dest
 			}
 			GetScript = {@{Result = "DownloadExchange2013CU12"}}
+			DependsOn = "[File]CreateDownloadFolder"
 		}
 
-		Script UnifiedCommunicationsManagedAPI4Runtime
+		Script DownloadUnifiedCommunicationsManagedAPI4Runtime
 		{
 			TestScript = {
 				Test-Path "F:\downloads\UcmaRuntimeSetup.exe"
@@ -273,7 +269,8 @@ Configuration Main
 				$dest = "F:\downloads\UcmaRuntimeSetup.exe"
 				Invoke-WebRequest $source -OutFile $dest
 			}
-			GetScript = {@{Result = "UnifiedCommunicationsManagedAPI4Runtime"}}
+			GetScript = {@{Result = "DownloadUnifiedCommunicationsManagedAPI4Runtime"}}
+			DependsOn = "[File]CreateDownloadFolder"
 		}
 
 		Script UnpackExchange
@@ -291,6 +288,16 @@ Configuration Main
 			DependsOn = "[Script]DownloadExchange2013CU12"
 		}
 
+
+		Package InstallUnifiedCommunicationsManagedAPI4Runtime {
+            Name = "Unified Communications Managed API4 Runtime"
+            Path = "F:\downloads\UcmaRuntimeSetup.exe"
+            Productid = "ED98ABF5-B6BF-47ED-92AB-1CDCAB964447"
+            Arguments = "/passive /norestart"
+            Ensure = "Present"
+            returncode = 0
+        }
+		<#
 		Script InstallUnifiedCommunicationsManagedAPI4Runtime
 		{
 
@@ -303,13 +310,15 @@ Configuration Main
 				Start-Process $FilePath $appArgs -PassThru | Wait-Process
 			}
 			GetScript = {@{Result = "InstallUnifiedCommunicationsManagedAPI4Runtime"}}
-			DependsOn = "[Script]UnifiedCommunicationsManagedAPI4Runtime"
+			DependsOn = "[Script]DownloadUnifiedCommunicationsManagedAPI4Runtime"
 
 		}
+		#>
 
 		xPendingReboot BeforeExchangeInstall
 		{
 			Name      = "BeforeExchangeInstall"
+			DependsOn  = '[Package]InstallUnifiedCommunicationsManagedAPI4Runtime','[script]UnpackExchange'
 		}
 
 		xExchInstall InstallExchange
