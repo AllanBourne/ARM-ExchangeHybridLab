@@ -3,7 +3,8 @@ Configuration Main
 
 	Param ( [PSCredential]$AdminCredential, [string]$DomainName, [string]$domainNameNetbios, [string]$domainDN, [string]$SourcePath, [string]$TargetPath, [Int]$RetryCount=20, [Int]$RetryIntervalSec=30 )
 
-	Import-DscResource -ModuleName PSDesiredStateConfiguration, xActiveDirectory, xDisk, xNetworking, xPendingReboot, cDisk, xOU
+	Import-DscResource -ModuleName PSDesiredStateConfiguration, xActiveDirectory, xDisk, xNetworking, xPendingReboot, cDisk, xOU, xSystemSecurity
+	Import-DSCResource -Module MSFT_xSystemSecurity -Name xIEEsc
 	[PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${domainNameNetbios}\$($AdminCredential.UserName)", $AdminCredential.Password)
 
 
@@ -27,6 +28,12 @@ Configuration Main
         {
             DiskNumber = 2
             DriveLetter = "F"
+        }
+
+        xIEEsc DisableIEEsc
+        {
+            IsEnabled = $false
+            UserRole = "Users"
         }
 
         WindowsFeature DNS 

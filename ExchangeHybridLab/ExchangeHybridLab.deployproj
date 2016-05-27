@@ -28,7 +28,6 @@
     <None Include="Deployment.targets">
       <Visible>False</Visible>
     </None>
-    <Content Include="DSC\InstallAADConnectConfiguration.ps1" />
     <Content Include="Scripts\Deploy-AzureResourceGroup.ps1" />
     <Content Include="Templates\lab10.azuredeploy.parameters.json" />
     <Content Include="Templates\lab09.azuredeploy.parameters.json" />

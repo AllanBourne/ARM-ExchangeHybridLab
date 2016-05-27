@@ -78,17 +78,6 @@
     "lclab01Subnet1Prefix": {
       "type": "string",
       "defaultValue": "10.0.0.0/24"
-    },
-
-    "lclab01cli01WindowsOSVersion": {
-      "type": "string",
-      "defaultValue": "2012-R2-Datacenter",
-      "allowedValues": [
-        "2008-R2-SP1",
-        "2012-Datacenter",
-        "2012-R2-Datacenter",
-        "Windows-Server-Technical-Preview"
-      ]
     }
 
   },
@@ -144,19 +133,7 @@
     "lclab01exch01NicName": "[concat(variables('lclab01exch01Name'), 'NetworkInterface')]",
     "lclab01exch01PublicName": "[concat(variables('lclab01exch01Name'), 'Public')]",
     "lclab01exch01PublicDnsName": "[variables('lclab01exch01Name')]",
-    "lclab01exch01NSGName": "[concat(variables('lclab01exch01Name'), 'NSG')]",
-
-    "lclab01cli01Name": "[concat(parameters('labprefix'), 'cli01')]",
-    "lclab01cli01ImagePublisher": "MicrosoftWindowsServer",
-    "lclab01cli01ImageOffer": "WindowsServer",
-    "lclab01cli01OSDiskName": "lclab01cli01OSDisk",
-    "lclab01cli01VmSize": "Standard_D1",
-    "lclab01cli01VnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('lclab01vnet01Name'))]",
-    "lclab01cli01SubnetRef": "[concat(variables('lclab01cli01VnetID'), '/subnets/', variables('lclab01Subnet1Name'))]",
-    "lclab01cli01StorageAccountContainerName": "vhds",
-    "lclab01cli01NicName": "[concat(variables('lclab01cli01Name'), 'NetworkInterface')]",
-    "lclab01cli01PublicName": "[concat(variables('lclab01cli01Name'), 'Public')]",
-    "lclab01cli01PublicDnsName": "[variables('lclab01cli01Name')]"
+    "lclab01exch01NSGName": "[concat(variables('lclab01exch01Name'), 'NSG')]"
   },
   "resources": [
     {
@@ -319,7 +296,7 @@
           "properties": {
             "publisher": "Microsoft.Powershell",
             "type": "DSC",
-            "typeHandlerVersion": "2.9",
+            "typeHandlerVersion": "2.17",
             "autoUpgradeMinorVersion": true,
             "settings": {
               "wmfVersion": "latest",
@@ -602,7 +579,7 @@
           "properties": {
             "publisher": "Microsoft.Powershell",
             "type": "DSC",
-            "typeHandlerVersion": "2.9",
+            "typeHandlerVersion": "2.17",
             "autoUpgradeMinorVersion": true,
             "settings": {
               "wmfVersion": "latest",
@@ -614,7 +591,7 @@
               "configurationArguments": {
                 "domainName": "[parameters('lclab01DomainName')]",
                 "domainNameNetbios": "[parameters('lclab01DomainNameNetbios')]",
-                "ExchangeOrgName": "[parameters('labprefix')]"
+                "ExchangeOrgName": "[variables('lclab01Name')]"
               },
               "configurationData": {
                 "url": "[concat(parameters('_artifactsLocation'), '/', 'ConfigurationData.psd1')]"
@@ -664,128 +641,6 @@
       },
       "dependsOn": [
         "[concat('Microsoft.Network/dnszones/', parameters('lclab01DomainName'))]"
-      ]
-    },
-    {
-      "name": "[variables('lclab01cli01PublicName')]",
-      "type": "Microsoft.Network/publicIPAddresses",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2015-06-15",
-      "dependsOn": [ ],
-      "tags": {
-        "displayName": "lclab01cli01Public"
-      },
-      "properties": {
-        "publicIPAllocationMethod": "Dynamic",
-        "dnsSettings": {
-          "domainNameLabel": "[variables('lclab01cli01PublicDnsName')]"
-        }
-      }
-    },
-    {
-      "name": "[variables('lclab01cli01NicName')]",
-      "type": "Microsoft.Network/networkInterfaces",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2015-06-15",
-      "dependsOn": [
-        "Microsoft.Resources/deployments/lclab01vnet01-with-dns-server",
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('lclab01cli01PublicName'))]"
-      ],
-      "tags": {
-        "displayName": "lclab01cli01Nic"
-      },
-      "properties": {
-        "ipConfigurations": [
-          {
-            "name": "ipconfig1",
-            "properties": {
-              "privateIPAllocationMethod": "Dynamic",
-              "subnet": {
-                "id": "[variables('lclab01cli01SubnetRef')]"
-              }
-            },
-            "publicIPAddress": {
-              "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('lclab01cli01PublicName'))]"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "[variables('lclab01cli01Name')]",
-      "type": "Microsoft.Compute/virtualMachines",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2015-06-15",
-      "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/', variables('lclab01Name'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('lclab01cli01NicName'))]"
-
-      ],
-      "tags": {
-        "displayName": "lclab01cli01"
-      },
-      "properties": {
-        "hardwareProfile": {
-          "vmSize": "[variables('lclab01cli01VmSize')]"
-        },
-        "osProfile": {
-          "computerName": "[variables('lclab01cli01Name')]",
-          "adminUsername": "[parameters('labAdminUserName')]",
-          "adminPassword": "[parameters('labAdminPassword')]"
-        },
-        "storageProfile": {
-          "imageReference": {
-            "publisher": "[variables('lclab01cli01ImagePublisher')]",
-            "offer": "[variables('lclab01cli01ImageOffer')]",
-            "sku": "[parameters('lclab01cli01WindowsOSVersion')]",
-            "version": "latest"
-          },
-          "osDisk": {
-            "name": "lclab01cli01OSDisk",
-            "vhd": {
-              "uri": "[concat('http://', variables('lclab01Name'), '.blob.core.windows.net/', variables('lclab01cli01StorageAccountContainerName'), '/', variables('lclab01cli01OSDiskName'), '.vhd')]"
-            },
-            "caching": "ReadWrite",
-            "createOption": "FromImage"
-          }
-        },
-        "networkProfile": {
-          "networkInterfaces": [
-            {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('lclab01cli01NicName'))]"
-            }
-          ]
-        }
-      },
-      "resources": [
-        {
-          "apiVersion": "2015-06-15",
-          "type": "extensions",
-          "name": "joindomain",
-          "location": "[resourceGroup().location]",
-          "tags": {
-            "displayName": "joindomain"
-          },
-          "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', variables('lclab01cli01Name'))]",
-            "[concat('Microsoft.Compute/virtualMachines/', variables('lclab01adds01name'),'/extensions/DeployADForest')]"
-          ],
-          "properties": {
-            "publisher": "Microsoft.Compute",
-            "type": "JsonADDomainExtension",
-            "typeHandlerVersion": "1.0",
-            "settings": {
-              "Name": "[parameters('lclab01DomainName')]",
-              "OUPath": "[concat('OU=Servers,', parameters('lclab01DN'))]",
-              "User": "[concat(parameters('labAdminUserName'), '@', parameters('lclab01DomainName'))]",
-              "Restart": "true",
-              "Options": "[parameters('lclab01DomainJoinOptions')]"
-            },
-            "protectedsettings": {
-              "Password": "[parameters('labAdminPassword')]"
-            }
-          }
-        }
       ]
     }
 

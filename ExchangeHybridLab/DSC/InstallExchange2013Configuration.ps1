@@ -1,4 +1,8 @@
-Configuration Main
+
+
+# Install Test
+
+Configuration InstallTest
 {
 
 	Param ( [PSCredential]$AdminCredential, [string]$DomainName, [string]$domainNameNetbios, [string]$ExchangeOrgName, [Int]$RetryCount=20, [Int]$RetryIntervalSec=30 )
@@ -39,6 +43,60 @@ Configuration Main
 		{
 			Ensure = "Present" 
 			Name = "Desktop-Experience"
+		}
+
+		WindowsFeature NETFramework45Features
+		{
+			Ensure = "Present" 
+			Name = "NET-Framework-45-Features"
+		}
+	}
+}
+
+# Install Main
+
+Configuration Main
+{
+
+	Param ( [PSCredential]$AdminCredential, [string]$DomainName, [string]$domainNameNetbios, [string]$ExchangeOrgName, [Int]$RetryCount=20, [Int]$RetryIntervalSec=30 )
+
+	Import-DscResource -ModuleName PSDesiredStateConfiguration, xDisk, xNetworking, xPendingReboot, cDisk, xExchange, xSystemSecurity
+	Import-DSCResource -Module MSFT_xSystemSecurity -Name xIEEsc
+    [PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${domainNameNetbios}\$($AdminCredential.UserName)", $AdminCredential.Password)
+
+
+	Node localhost
+	{
+		LocalConfigurationManager            
+		{            
+			ActionAfterReboot = 'ContinueConfiguration'            
+			ConfigurationMode = 'ApplyOnly'            
+			RebootNodeIfNeeded = $true            
+		} 
+
+		xWaitforDisk Disk2
+		{
+			DiskNumber = 2
+			RetryIntervalSec =$RetryIntervalSec
+			RetryCount = $RetryCount
+		}
+
+		cDiskNoRestart ADDataDisk
+		{
+			DiskNumber = 2
+			DriveLetter = "F"
+		}
+
+        xIEEsc DisableIEEsc
+        {
+            IsEnabled = $false
+            UserRole = "Users"
+        }
+
+		WindowsFeature ASHTTPActivation
+		{
+			Ensure = "Present" 
+			Name = "AS-HTTP-Activation"
 		}
 
 		WindowsFeature NETFramework45Features
@@ -324,7 +382,7 @@ Configuration Main
 		xExchInstall InstallExchange
 		{
 			Path       = "f:downloads\Exchange2013Source\setup.exe"
-			Arguments  = "/mode:Install /role:Mailbox,ClientAccess /Iacceptexchangeserverlicenseterms /OrganizationName:$ExchangeOrgName"
+			Arguments  = "/mode:Install /role:Mailbox,ClientAccess /Iacceptexchangeserverlicenseterms /InstallWindowsComponents /OrganizationName:$ExchangeOrgName"
 			Credential = $DomainCreds
 			DependsOn  = '[xPendingReboot]BeforeExchangeInstall'
 		}
